@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR 코드 생성기</title>
+
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --background: #f3f4f6;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --danger: #dc2626;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--background);
+      color: var(--text);
+      font-family:
+        Pretendard,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    .description {
+      margin: 0 0 24px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    textarea,
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    textarea:focus,
+    input:focus,
+    select:focus {
+      outline: 2px solid rgba(37, 99, 235, 0.2);
+      border-color: var(--primary);
+    }
+
+    .settings {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    button {
+      flex: 1;
+      border: 0;
+      border-radius: 8px;
+      padding: 13px 16px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .primary-button {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .primary-button:hover {
+      background: var(--primary-dark);
+    }
+
+    .secondary-button {
+      background: #e5e7eb;
+      color: var(--text);
+    }
+
+    .secondary-button:hover {
+      background: #d1d5db;
+    }
+
+    .result-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 500px;
+      text-align: center;
+    }
+
+    .result-card h2 {
+      margin: 0 0 20px;
+      font-size: 22px;
+    }
+
+    #qrcode {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 300px;
+      min-height: 300px;
+      padding: 12px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    #qrcode canvas,
+    #qrcode img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .empty-message {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .status {
+      min-height: 24px;
+      margin-top: 14px;
+      color: var(--danger);
+      font-size: 14px;
+    }
+
+    .download-button {
+      width: 300px;
+      max-width: 100%;
+      margin-top: 20px;
+      background: #111827;
+      color: #fff;
+    }
+
+    .download-button:hover {
+      background: #374151;
+    }
+
+    .download-button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 700px) {
+      body {
+        padding: 14px;
+      }
+
+      .container {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: 20px;
+      }
+
+      .result-card {
+        min-height: auto;
+      }
+
+      #qrcode {
+        width: 260px;
+        min-height: 260px;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <section class="card">
+      <h1>QR 코드 생성기</h1>
+      <p class="description">
+        URL, 텍스트, 연락처 정보 등을 입력하면 QR코드를 생성할 수 있습니다.
+      </p>
+
+      <div class="form-group">
+        <label for="qrText">QR코드 내용</label>
+        <textarea
+          id="qrText"
+          placeholder="예: https://example.com"
+        ></textarea>
+      </div>
+
+      <div class="settings">
+        <div class="form-group">
+          <label for="qrSize">크기</label>
+          <select id="qrSize">
+            <option value="200">200 × 200</option>
+            <option value="300" selected>300 × 300</option>
+            <option value="400">400 × 400</option>
+            <option value="500">500 × 500</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="errorCorrection">오류 복원 수준</label>
+          <select id="errorCorrection">
+            <option value="L">낮음</option>
+            <option value="M" selected>보통</option>
+            <option value="Q">높음</option>
+            <option value="H">최고</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button
+          type="button"
+          class="primary-button"
+          id="generateButton"
+        >
+          QR코드 생성
+        </button>
+
+        <button
+          type="button"
+          class="secondary-button"
+          id="clearButton"
+        >
+          초기화
+        </button>
+      </div>
+
+      <div class="status" id="status" aria-live="polite"></div>
+    </section>
+
+    <section class="card result-card">
+      <h2>생성 결과</h2>
+
+      <div id="qrcode">
+        <p class="empty-message">
+          내용을 입력한 뒤<br />
+          QR코드 생성 버튼을 눌러주세요.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="download-button"
+        id="downloadButton"
+        disabled
+      >
+        PNG 다운로드
+      </button>
+    </section>
+  </main>
+
+  <!-- QRCode.js 라이브러리 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <script>
+    const qrText = document.getElementById("qrText");
+    const qrSize = document.getElementById("qrSize");
+    const errorCorrection = document.getElementById("errorCorrection");
+    const generateButton = document.getElementById("generateButton");
+    const clearButton = document.getElementById("clearButton");
+    const downloadButton = document.getElementById("downloadButton");
+    const qrCodeContainer = document.getElementById("qrcode");
+    const status = document.getElementById("status");
+
+    let currentQRCode = null;
+
+    function generateQRCode() {
+      const text = qrText.value.trim();
+      const size = Number(qrSize.value);
+      const correctionLevel = errorCorrection.value;
+
+      status.textContent = "";
+
+      if (!text) {
+        status.textContent = "QR코드로 변환할 내용을 입력해주세요.";
+        qrText.focus();
+        return;
+      }
+
+      qrCodeContainer.innerHTML = "";
+
+      try {
+        currentQRCode = new QRCode(qrCodeContainer, {
+          text: text,
+          width: size,
+          height: size,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel[correctionLevel]
+        });
+
+        downloadButton.disabled = false;
+      } catch (error) {
+        currentQRCode = null;
+        downloadButton.disabled = true;
+        status.textContent =
+          "QR코드를 생성할 수 없습니다. 입력 내용을 줄여서 다시 시도해주세요.";
+        console.error(error);
+      }
+    }
+
+    function clearQRCode() {
+      qrText.value = "";
+      qrCodeContainer.innerHTML = `
+        <p class="empty-message">
+          내용을 입력한 뒤<br />
+          QR코드 생성 버튼을 눌러주세요.
+        </p>
+      `;
+      status.textContent = "";
+      currentQRCode = null;
+      downloadButton.disabled = true;
+      qrText.focus();
+    }
+
+    function downloadQRCode() {
+      if (!currentQRCode) {
+        return;
+      }
+
+      const canvas = qrCodeContainer.querySelector("canvas");
+      const image = qrCodeContainer.querySelector("img");
+
+      let downloadUrl = "";
+
+      if (canvas) {
+        downloadUrl = canvas.toDataURL("image/png");
+      } else if (image) {
+        downloadUrl = image.src;
+      }
+
+      if (!downloadUrl) {
+        status.textContent = "다운로드할 QR코드가 없습니다.";
+        return;
+      }
+
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = "qrcode.png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    generateButton.addEventListener("click", generateQRCode);
+    clearButton.addEventListener("click", clearQRCode);
+    downloadButton.addEventListener("click", downloadQRCode);
+
+    qrText.addEventListener("keydown", function (event) {
+      if (event.ctrlKey && event.key === "Enter") {
+        generateQRCode();
+      }
+    });
+  </script>
+</body>
+</html>
